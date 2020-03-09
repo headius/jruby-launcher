@@ -22,25 +22,6 @@ UnixLauncher::~UnixLauncher() {
 
 int UnixLauncher::run(int argc, char* argv[], char* envp[]) {
     platformDir = argv[0];
-    if (!initPlatformDir() || !parseArgs(argc - 1, argv + 1)) {
-        return 255;
-    }
-
-    if (nailgunClient) {
-        progArgs.push_front("org.jruby.util.NailMain");
-        char ** nailArgv = convertToArgvArray(progArgs);
-        int nailArgc = progArgs.size();
-
-        if (printCommandLine) {
-            printListToConsole(progArgs);
-            for (int i = 0; i < nailArgc; i++) {
-                free(nailArgv[i]);
-            }
-            delete[] nailArgv;
-            return 0;
-        }
-        return nailgunClientMain(progArgs.size(), (char**)nailArgv, envp);
-    }
 
     string java("");
 
@@ -62,6 +43,26 @@ int UnixLauncher::run(int argc, char* argv[], char* envp[]) {
     if (java.empty()) {
         printToConsole("No `java' executable found on PATH.");
         return 255;
+    }
+
+    if (!initPlatformDir() || !parseArgs(argc - 1, argv + 1)) {
+        return 255;
+    }
+
+    if (nailgunClient) {
+        progArgs.push_front("org.jruby.util.NailMain");
+        char ** nailArgv = convertToArgvArray(progArgs);
+        int nailArgc = progArgs.size();
+
+        if (printCommandLine) {
+            printListToConsole(progArgs);
+            for (int i = 0; i < nailArgc; i++) {
+                free(nailArgv[i]);
+            }
+            delete[] nailArgv;
+            return 0;
+        }
+        return nailgunClientMain(progArgs.size(), (char**)nailArgv, envp);
     }
 
     prepareOptions();

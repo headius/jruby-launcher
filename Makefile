@@ -1,8 +1,8 @@
 # These line gets substituted with the actual Config::CONFIG items location by extconf.rb
-PREFIX = notspecified
-BINDIR = $(PREFIX)/bin
-JRUBY_VERSION = notspecified
-JRUBY_MODULE =
+PREFIX = /Users/headius/.rvm/rubies/jruby-9.2.11.0
+BINDIR = /Users/headius/.rvm/rubies/jruby-9.2.11.0/bin
+JRUBY_VERSION = 9.2.11.0
+JRUBY_MODULE = 1
 INSTALLDIR = $(PREFIX)/lib/ruby/shared/rubygems/defaults
 INSTALLDIR9000 = $(PREFIX)/lib/ruby/stdlib/rubygems/defaults
 OLDINSTALLDIR = $(PREFIX)/lib/ruby/site_ruby/1.8/rubygems/defaults

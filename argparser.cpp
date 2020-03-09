@@ -15,6 +15,8 @@
 #include "argnames.h"
 #include "version.h"
 #include "sys/stat.h"
+#include <iostream>
+#include <fstream>
 
 #ifndef WIN32
 #include <sys/types.h>
@@ -336,10 +338,22 @@ bool ArgParser::parseArgs(int argc, char *argv[]) {
                 || it->compare(ARG_NAME_CLIENT) == 0) {
             javaOptions.push_back(it->substr(1)); // to JVMLauncher, -server instead of --server
         } else if (it->compare(ARG_NAME_DEV) == 0) {
-            javaOptions.push_back("-XX:+TieredCompilation");
-            javaOptions.push_back("-XX:TieredStopAtLevel=1");
-            javaOptions.push_back("-Djruby.compile.mode=OFF");
-            javaOptions.push_back("-Djruby.compile.invokedynamic=false");
+            // Use java_opts file if present
+            string devOptsFile = platformDir + "/bin/.dev_mode.java_opts";
+            if (access(devOptsFile.c_str(), R_OK) == 0) {
+                logMsg("adding dev-mode Java options from bin/.dev_mode.java_opts");
+                processJavaOptsFile(devOptsFile);
+            } else {
+                logMsg("adding dev-mode Java options from defaults");
+                javaOptions.push_back("-XX:+TieredCompilation");
+                javaOptions.push_back("-XX:TieredStopAtLevel=1");
+                javaOptions.push_back("-Djruby.compile.mode=OFF");
+                javaOptions.push_back("-Djruby.compile.invokedynamic=false");
+            }
+
+            // For OpenJ9 use environment variable to enable quickstart and shareclasses
+            setenv("OPENJ9_JAVA_OPTIONS", "-Xquickstart -Xshareclasses", true);
+
             progArgs.push_back(*it); // allow JRuby to process it too
         } else if (it->compare(ARG_NAME_SAMPLE) == 0) {
             javaOptions.push_back("-Xprof");
@@ -465,8 +479,6 @@ void ArgParser::prepareOptions() {
 
     setupMaxHeapAndStack(userOptions);
 
-    useModulesIfPresent();
-
     constructBootClassPath();
     constructClassPath();
 
@@ -530,6 +542,23 @@ void ArgParser::prepareOptions() {
     }
 
     javaOptions.insert(javaOptions.end(), userOptions.begin(), userOptions.end());
+}
+
+void ArgParser::processJavaOptsFile(string filename) {
+    if (useModulePath) {
+        javaOptions.push_back(string("@") + filename);
+    } else {
+        ifstream options_file;
+
+        options_file.open(filename);
+        string option;
+        getline(options_file, option);
+        while (option.length() > 0) {
+            javaOptions.push_back(option.c_str());
+            getline(options_file, option);
+        }
+        options_file.close();
+    }
 }
 
 void ArgParser::setupMaxHeapAndStack(list<string> userOptions) {

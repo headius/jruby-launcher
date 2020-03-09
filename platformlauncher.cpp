@@ -88,9 +88,9 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode, const char*
 
     platformDir = binaryName;
     checkLoggingArg(argc, argv, false);
-    if (!initPlatformDir()
-        || !parseArgs(argc, argv)
-        || !checkJDKHome()) {
+    if (!checkJDKHome()
+        || !initPlatformDir()
+        || !parseArgs(argc, argv)) {
         return false;
     }
     disableFolderVirtualization(GetCurrentProcess());

@@ -43,6 +43,7 @@ protected:
 
     bool initPlatformDir();
     void prepareOptions();
+    void processJavaOptsFile(std::string file);
     void setupMaxHeapAndStack(std::list<std::string> userOptions);
     void addEnvVarToOptions(std::list<std::string> & optionsList, const char * envvar);
     void constructClassPath();
